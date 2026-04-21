@@ -28,6 +28,7 @@ export default function ListingsPage() {
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const category = searchParams.get('category') || '';
   const city = searchParams.get('city') || '';
@@ -37,26 +38,42 @@ export default function ListingsPage() {
   const maxPrice = searchParams.get('maxPrice') || '';
   const page = parseInt(searchParams.get('page') || '1');
 
+  // Force refresh function
+  const forceRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   useEffect(() => {
     const fetchListings = async () => {
       setLoading(true);
       try {
-        const params: Record<string, string> = { page: String(page), limit: '12' };
+        const params: Record<string, string> = { 
+          page: String(page), 
+          limit: '12',
+          _t: Date.now().toString() // Cache buster
+        };
         if (category) params.category = category;
         if (city) params.city = city;
         if (search) params.search = search;
         if (subCategory) params.subCategory = subCategory;
         if (minPrice) params.minPrice = minPrice;
         if (maxPrice) params.maxPrice = maxPrice;
+        
+        console.log('Fetching listings with params:', params);
         const { data } = await api.get('/listings', { params });
+        console.log('Received listings:', data);
+        
         setListings(data.listings);
         setTotal(data.total);
         setPages(data.pages);
-      } catch { setListings([]); }
+      } catch (error) { 
+        console.error('Error fetching listings:', error);
+        setListings([]); 
+      }
       finally { setLoading(false); }
     };
     fetchListings();
-  }, [category, city, search, subCategory, minPrice, maxPrice, page]);
+  }, [category, city, search, subCategory, minPrice, maxPrice, page, refreshKey]);
 
   const updateParam = (key: string, value: string) => {
     const p = new URLSearchParams(searchParams);
@@ -71,11 +88,31 @@ export default function ListingsPage() {
     <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
       {/* Page Header */}
       <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e1b4b)', padding: '32px 32px 28px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: '#f1f5f9', marginBottom: 4 }}>
-            {categoryLabels[category] || 'All Listings'}
-          </h1>
-          <p style={{ fontSize: 14, color: '#94a3b8' }}>{total} results found{city ? ` in ${city}` : ''}</p>
+        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#f1f5f9', marginBottom: 4 }}>
+              {categoryLabels[category] || 'All Listings'}
+            </h1>
+            <p style={{ fontSize: 14, color: '#94a3b8' }}>{total} results found{city ? ` in ${city}` : ''}</p>
+          </div>
+          <button 
+            onClick={forceRefresh}
+            style={{ 
+              background: 'linear-gradient(135deg,#10b981,#059669)', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: 8, 
+              padding: '10px 20px', 
+              fontSize: 14, 
+              fontWeight: 600, 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}
+          >
+            🔄 Refresh
+          </button>
         </div>
       </div>
 

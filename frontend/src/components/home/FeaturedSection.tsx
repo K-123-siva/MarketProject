@@ -19,11 +19,22 @@ export default function FeaturedSection({ title, subtitle, category, viewAllPath
     const fetchData = async () => {
       setLoading(true);
       try {
-        const params: Record<string, string> = { category, limit: '10' };
+        const params: Record<string, string> = { 
+          category, 
+          limit: '10',
+          _t: Date.now().toString() // Cache buster
+        };
         if (activeCity !== 'All') params.city = activeCity;
+        
+        console.log('FeaturedSection fetching listings with params:', params);
         const { data } = await api.get('/listings', { params });
+        console.log('FeaturedSection received listings:', data);
+        
         setListings(data.listings || []);
-      } catch { setListings([]); }
+      } catch (error) { 
+        console.error('FeaturedSection error fetching listings:', error);
+        setListings([]); 
+      }
       finally { setLoading(false); }
     };
     fetchData();

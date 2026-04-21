@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Heart, MapPin, BadgeCheck, ChevronLeft, ChevronRight, Phone, Eye } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Heart, MapPin, BadgeCheck, ChevronLeft, ChevronRight, Phone, Eye, MessageCircle, User } from 'lucide-react';
 import { Listing } from '../../types';
 import { useWishlistStore } from '../../store/wishlistStore';
 import { useAuthStore } from '../../store/authStore';
@@ -17,8 +17,10 @@ const formatPrice = (price?: number) => {
 export default function ListingCard({ listing }: Props) {
   const [imgIndex, setImgIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
+  const [showPhone, setShowPhone] = useState(false);
   const { items, toggle } = useWishlistStore();
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const isSaved = items.includes(listing.id);
   const images = listing.images?.length > 0 ? listing.images : ['https://placehold.co/400x220/1e1b4b/818cf8?text=NestBazaar'];
 
@@ -26,6 +28,26 @@ export default function ListingCard({ listing }: Props) {
     e.preventDefault();
     if (!user) { alert('Please login to save listings'); return; }
     toggle(listing.id);
+  };
+
+  const handleChat = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) { 
+      alert('Please login to chat with seller'); 
+      navigate('/login');
+      return; 
+    }
+    navigate(`/chat?sellerId=${listing.sellerId}&listingId=${listing.id}`);
+  };
+
+  const handleCall = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) { 
+      alert('Please login to view contact details'); 
+      navigate('/login');
+      return; 
+    }
+    setShowPhone(true);
   };
 
   return (
@@ -97,12 +119,63 @@ export default function ListingCard({ listing }: Props) {
           </div>
         )}
 
+        {/* Seller Info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid #f1f5f9' }}>
+          <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 10, fontWeight: 700 }}>
+            {listing.seller?.name?.[0]?.toUpperCase() || <User size={12} />}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{listing.seller?.name || 'Seller'}</div>
+            {showPhone && listing.seller?.phone ? (
+              <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 600 }}>📞 {listing.seller.phone}</div>
+            ) : (
+              <div style={{ fontSize: 11, color: '#64748b' }}>Click to view contact</div>
+            )}
+          </div>
+          {listing.seller?.isVerified && (
+            <span style={{ fontSize: 10, color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>✓ Verified</span>
+          )}
+        </div>
+
         <div style={{ display: 'flex', gap: 8 }}>
-          <button style={{ flex: 1, border: '1.5px solid #e2e8f0', background: '#fff', color: '#374151', padding: '9px 0', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-            View Details
+          <button 
+            onClick={handleCall}
+            style={{ 
+              flex: 1, 
+              border: '1.5px solid #6366f1', 
+              background: showPhone ? '#6366f1' : '#fff', 
+              color: showPhone ? '#fff' : '#6366f1', 
+              padding: '9px 0', 
+              borderRadius: 8, 
+              fontSize: 13, 
+              fontWeight: 600, 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 5,
+              transition: 'all 0.2s'
+            }}>
+            <Phone size={12} /> {showPhone ? 'Call Now' : 'Show Phone'}
           </button>
-          <button style={{ flex: 1, border: 'none', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', padding: '9px 0', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-            <Phone size={12} /> Call Back
+          <button 
+            onClick={handleChat}
+            style={{ 
+              flex: 1, 
+              border: 'none', 
+              background: 'linear-gradient(135deg,#10b981,#059669)', 
+              color: '#fff', 
+              padding: '9px 0', 
+              borderRadius: 8, 
+              fontSize: 13, 
+              fontWeight: 600, 
+              cursor: 'pointer', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: 5 
+            }}>
+            <MessageCircle size={12} /> Chat
           </button>
         </div>
       </Link>

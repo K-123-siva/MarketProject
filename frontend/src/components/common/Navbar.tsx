@@ -93,7 +93,7 @@ export default function Navbar() {
           <Link to="/post-ad"
             style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', padding: '9px 20px', borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 12px rgba(99,102,241,0.4)' }}
             className="hidden md:flex">
-            <Plus size={15} /> Post Ad
+            <Plus size={15} /> Sell Anything
           </Link>
 
           <button className="lg:hidden" onClick={() => setMenuOpen(!menuOpen)}
@@ -113,7 +113,7 @@ export default function Navbar() {
           ))}
           <Link to="/post-ad" onClick={() => setMenuOpen(false)}
             style={{ display: 'block', marginTop: 12, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', textAlign: 'center', padding: 12, borderRadius: 10, fontWeight: 700, textDecoration: 'none', fontSize: 14 }}>
-            + Post Free Ad
+            + Sell Anything Free
           </Link>
         </div>
       )}

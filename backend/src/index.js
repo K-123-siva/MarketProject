@@ -23,12 +23,23 @@ const io = new Server(server, {
 app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
 
+// Disable caching for API responses
+app.use('/api', (req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  });
+  next();
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/listings', require('./routes/listings'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/messages', require('./routes/messages'));
+app.use('/api/admin', require('./routes/admin'));
 
 app.get('/', (req, res) => res.json({ message: 'NestBazaar API running' }));
 
